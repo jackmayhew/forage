@@ -1,6 +1,6 @@
 # forage
 
-find and download similar music from a spotify track
+cli tool to find and download similar music from a spotify track
 
 ## what it does
 
