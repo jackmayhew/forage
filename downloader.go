@@ -7,18 +7,16 @@ import (
 	"path/filepath"
 )
 
-func downloadTrack(artist, track, outputDir string) error {
+func downloadTrack(artist, track, outputDir, album, albumArtURL string) error {
 	logInfo("Downloading: %s - %s\n", artist, track)
 
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %v", err)
 	}
 
-	// Create filename from artist and track
 	filename := fmt.Sprintf("%s - %s.mp3", artist, track)
 	outputPath := filepath.Join(outputDir, filename)
 
-	// Check if file already exists
 	if _, err := os.Stat(outputPath); err == nil {
 		logInfo("⊘ Already exists, skipping\n\n")
 		return fmt.Errorf("skipped")
@@ -38,6 +36,12 @@ func downloadTrack(artist, track, outputDir string) error {
 		return fmt.Errorf("download failed: %v\n%s", err, string(output))
 	}
 
-	logInfo("✓ Downloaded\n\n")
+	// Add metadata
+	if err := addMetadata(outputPath, artist, track, album, albumArtURL); err != nil {
+		logInfo("⚠ Downloaded but failed to add metadata\n\n")
+	} else {
+		logInfo("✓ Downloaded with metadata\n\n")
+	}
+
 	return nil
 }

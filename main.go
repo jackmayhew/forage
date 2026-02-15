@@ -48,14 +48,14 @@ func main() {
 
 	logInfo("Track ID: %s\n", trackID)
 
-	// Get Spotify access token
+	// Spotify access token
 	token, err := getSpotifyToken(spotifyClientID, spotifyClientSecret)
 	if err != nil {
 		fmt.Printf("Error getting Spotify token: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Get track info from Spotify
+	// Track info from Spotify
 	track, err := getTrackInfo(token, trackID)
 	if err != nil {
 		fmt.Printf("Error getting track info: %v\n", err)
@@ -73,7 +73,7 @@ func main() {
 	logInfo("\nFound: %s - %s\n\n", artistName, trackName)
 	logInfo("Finding %d similar tracks on Last.fm...\n", *countFlag)
 
-	// Get similar tracks from Last.fm
+	// Similar tracks from Last.fm
 	similarTracks, err := getSimilarTracks(lastfmAPIKey, artistName, trackName, *countFlag)
 	if err != nil {
 		fmt.Printf("Error getting similar tracks: %v\n", err)
@@ -99,7 +99,18 @@ func main() {
 	skippedCount := 0
 
 	for _, t := range similarTracks {
-		err := downloadTrack(t.Artist.Name, t.Name, *outputFlag)
+		// Full track info for metadata
+		similarTrackInfo, err := getTrackInfoBySearch(token, t.Artist.Name, t.Name)
+		
+		var album, albumArtURL string
+		if err == nil && similarTrackInfo != nil {
+			album = similarTrackInfo.Album.Name
+			if len(similarTrackInfo.Album.Images) > 0 {
+				albumArtURL = similarTrackInfo.Album.Images[0].URL
+			}
+		}
+
+		err = downloadTrack(t.Artist.Name, t.Name, *outputFlag, album, albumArtURL)
 		if err != nil {
 			if err.Error() == "skipped" {
 				skippedCount++
