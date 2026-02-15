@@ -55,7 +55,7 @@ flags:
 3. downloads from youtube as mp3
 4. adds metadata and album art
 
-files are named `Artist - Track.mp3` and automatically skips if already downloaded
+files are named `Artist - Track.mp3` and automatically skips download if already downloaded
 
 ## notes
 
