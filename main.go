@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -99,9 +100,9 @@ func main() {
 	skippedCount := 0
 
 	for _, t := range similarTracks {
-		// Full track info for metadata
+		// Get full track info for metadata
 		similarTrackInfo, err := getTrackInfoBySearch(token, t.Artist.Name, t.Name)
-		
+
 		var album, albumArtURL string
 		if err == nil && similarTrackInfo != nil {
 			album = similarTrackInfo.Album.Name
@@ -112,7 +113,7 @@ func main() {
 
 		err = downloadTrack(t.Artist.Name, t.Name, *outputFlag, album, albumArtURL)
 		if err != nil {
-			if err.Error() == "skipped" {
+			if errors.Is(err, ErrSkipped) {
 				skippedCount++
 			} else {
 				failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))

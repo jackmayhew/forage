@@ -1,11 +1,25 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
+
+var ErrSkipped = errors.New("skipped")
+
+func sanitizeFilename(name string) string {
+	// Replace invalid characters with underscore
+	invalid := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
+	result := name
+	for _, char := range invalid {
+		result = strings.ReplaceAll(result, char, "_")
+	}
+	return result
+}
 
 func downloadTrack(artist, track, outputDir, album, albumArtURL string) error {
 	logInfo("Downloading: %s - %s\n", artist, track)
@@ -14,12 +28,15 @@ func downloadTrack(artist, track, outputDir, album, albumArtURL string) error {
 		return fmt.Errorf("failed to create output directory: %v", err)
 	}
 
-	filename := fmt.Sprintf("%s - %s.mp3", artist, track)
+	// Sanitize artist and track names for filename
+	safeArtist := sanitizeFilename(artist)
+	safeTrack := sanitizeFilename(track)
+	filename := fmt.Sprintf("%s - %s.mp3", safeArtist, safeTrack)
 	outputPath := filepath.Join(outputDir, filename)
 
 	if _, err := os.Stat(outputPath); err == nil {
 		logInfo("⊘ Already exists, skipping\n\n")
-		return fmt.Errorf("skipped")
+		return ErrSkipped
 	}
 
 	query := fmt.Sprintf("%s %s audio", artist, track)
