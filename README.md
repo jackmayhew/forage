@@ -48,7 +48,7 @@ options:
 ```
 
 flags:
-- `--count N` - number of similar tracks (default: 10)
+- `--count N` - number of similar tracks (max: 50, default: 10)
 - `--output DIR` - where to save files (default: ./downloads)
 - `--quiet` - minimal output
 
