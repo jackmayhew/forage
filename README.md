@@ -38,7 +38,7 @@ LASTFM_API_KEY=your_key
 
 basic:
 ```bash
-./forage "https://open.spotify.com/track/..."
+./forage "https://open.spotify.com/track/2Ud3deeqLAG988pfW0Kwcl?si=e1f747637ed241b6"
 ```
 
 options:
