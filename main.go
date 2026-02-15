@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -23,12 +24,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: music-finder <spotify-url>")
+	// Flags
+	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) < 1 {
+		fmt.Println("Usage: forage <spotify-url> [--count N]")
 		os.Exit(1)
 	}
 
-	spotifyURL := os.Args[1]
+	spotifyURL := args[0]
 	trackID := extractTrackID(spotifyURL)
 
 	if trackID == "" {
@@ -38,17 +44,22 @@ func main() {
 
 	fmt.Printf("Track ID: %s\n", trackID)
 
-	// Get Spotify access token
+	// Spotify access token
 	token, err := getSpotifyToken(spotifyClientID, spotifyClientSecret)
 	if err != nil {
 		fmt.Printf("Error getting Spotify token: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Get track info from Spotify
+	// Track info from Spotify
 	track, err := getTrackInfo(token, trackID)
 	if err != nil {
 		fmt.Printf("Error getting track info: %v\n", err)
+		os.Exit(1)
+	}
+	
+	if len(track.Artists) == 0 {
+		fmt.Println("Track not found or has no artist information")
 		os.Exit(1)
 	}
 
@@ -57,9 +68,9 @@ func main() {
 
 	fmt.Printf("\nFound: %s - %s\n\n", artistName, trackName)
 
-	// Get similar tracks from Last.fm
-	fmt.Println("Finding similar tracks on Last.fm...")
-	similarTracks, err := getSimilarTracks(lastfmAPIKey, artistName, trackName, 10)
+	// Similar tracks from Last.fm
+	fmt.Printf("Finding %d similar tracks on Last.fm...\n", *countFlag)
+	similarTracks, err := getSimilarTracks(lastfmAPIKey, artistName, trackName, *countFlag)
 	if err != nil {
 		fmt.Printf("Error getting similar tracks: %v\n", err)
 		os.Exit(1)
@@ -68,5 +79,34 @@ func main() {
 	fmt.Printf("\nFound %d similar tracks:\n\n", len(similarTracks))
 	for i, t := range similarTracks {
 		fmt.Printf("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
+	}
+
+	// Download
+	fmt.Println("\n--- Starting downloads ---")
+	
+	var failures []string
+	successCount := 0
+	
+	for _, t := range similarTracks {
+		err := downloadTrack(t.Artist.Name, t.Name)
+		if err != nil {
+			failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))
+			fmt.Printf("✗ Failed\n\n")
+		} else {
+			successCount++
+		}
+	}
+
+	// Summary
+	fmt.Println("--- Download Summary ---")
+	fmt.Printf("✓ Successfully downloaded: %d/%d tracks\n", successCount, len(similarTracks))
+	
+	if len(failures) > 0 {
+		fmt.Printf("\n✗ Failed downloads:\n")
+		for _, track := range failures {
+			fmt.Printf("  - %s\n", track)
+		}
+	} else {
+		fmt.Println("\nAll downloads completed successfully!")
 	}
 }
