@@ -21,8 +21,8 @@ func sanitizeFilename(name string) string {
 	return result
 }
 
-func downloadTrack(artist, track, outputDir, album, albumArtURL string) error {
-	logInfo("Downloading: %s - %s\n", artist, track)
+func downloadTrack(artist, track, outputDir, album, albumArtURL string, current, total int) error {
+	logInfo("Downloading: %s - %s (%d/%d)\n", artist, track, current, total)
 
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %v", err)
