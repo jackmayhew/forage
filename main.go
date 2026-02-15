@@ -78,6 +78,12 @@ func main() {
 	}
 
 	fmt.Printf("\nFound %d similar tracks:\n\n", len(similarTracks))
+
+	if len(similarTracks) == 0 {
+		fmt.Println("No similar tracks found. Try a different song.")
+		os.Exit(0)
+	}
+
 	for i, t := range similarTracks {
 		fmt.Printf("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
 	}
@@ -87,21 +93,29 @@ func main() {
 	
 	var failures []string
 	successCount := 0
-	
+	skippedCount := 0
+
 	for _, t := range similarTracks {
-	err := downloadTrack(t.Artist.Name, t.Name, *outputFlag)
-	if err != nil {
-		failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))
-		fmt.Printf("✗ Failed\n\n")
-	} else {
-		successCount++
+		err := downloadTrack(t.Artist.Name, t.Name, *outputFlag)
+		if err != nil {
+			if err.Error() == "skipped" {
+				skippedCount++
+			} else {
+				failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))
+				fmt.Printf("✗ Failed\n\n")
+			}
+		} else {
+			successCount++
+		}
 	}
-}
 
 	// Summary
 	fmt.Println("--- Download Summary ---")
-	fmt.Printf("✓ Successfully downloaded: %d/%d tracks\n", successCount, len(similarTracks))
-	
+	fmt.Printf("✓ Downloaded: %d tracks\n", successCount)
+	if skippedCount > 0 {
+		fmt.Printf("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
+	}
+
 	if len(failures) > 0 {
 		fmt.Printf("\n✗ Failed downloads:\n")
 		for _, track := range failures {
