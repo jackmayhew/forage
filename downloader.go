@@ -12,7 +12,6 @@ import (
 var ErrSkipped = errors.New("skipped")
 
 func sanitizeFilename(name string) string {
-	// Replace invalid characters with underscore
 	invalid := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
 	result := name
 	for _, char := range invalid {

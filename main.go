@@ -105,7 +105,7 @@ func main() {
 	skippedCount := 0
 
 	for i, t := range similarTracks {
-		// Get full track info for metadata
+		// Full track info for metadata
 		similarTrackInfo, err := getTrackInfoBySearch(token, t.Artist.Name, t.Name)
 
 		var album, albumArtURL string
