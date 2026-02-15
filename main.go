@@ -26,7 +26,7 @@ func main() {
 
 	// Define flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
-	outputFlag := flag.String("output", ".", "Output directory for downloaded tracks")
+	outputFlag := flag.String("output", "./downloads", "Output directory for downloaded tracks")
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
 	flag.Parse()
 
