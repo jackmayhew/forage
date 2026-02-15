@@ -26,6 +26,7 @@ func main() {
 
 	// Flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
+	outputFlag := flag.String("output", ".", "Output directory for downloaded tracks")
 	flag.Parse()
 
 	args := flag.Args()
@@ -88,14 +89,14 @@ func main() {
 	successCount := 0
 	
 	for _, t := range similarTracks {
-		err := downloadTrack(t.Artist.Name, t.Name)
-		if err != nil {
-			failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))
-			fmt.Printf("✗ Failed\n\n")
-		} else {
-			successCount++
-		}
+	err := downloadTrack(t.Artist.Name, t.Name, *outputFlag)
+	if err != nil {
+		failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))
+		fmt.Printf("✗ Failed\n\n")
+	} else {
+		successCount++
 	}
+}
 
 	// Summary
 	fmt.Println("--- Download Summary ---")
