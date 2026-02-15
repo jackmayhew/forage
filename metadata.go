@@ -22,10 +22,14 @@ func addMetadata(filepath, artist, title, album, albumArtURL string) error {
 	// Download and add album art
 	if albumArtURL != "" {
 		resp, err := http.Get(albumArtURL)
-		if err == nil {
+		if err != nil {
+			logInfo("⚠ Failed to download album art\n")
+		} else {
 			defer resp.Body.Close()
 			artData, err := io.ReadAll(resp.Body)
-			if err == nil {
+			if err != nil {
+				logInfo("⚠ Failed to read album art\n")
+			} else {
 				pic := id3v2.PictureFrame{
 					Encoding:    id3v2.EncodingUTF8,
 					MimeType:    "image/jpeg",
