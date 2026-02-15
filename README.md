@@ -6,6 +6,10 @@ cli tool to find and download similar music from a spotify track
 
 paste a spotify track url, forage finds similar songs on last.fm and downloads them as mp3s with metadata and album art
 
+## why
+
+i wanted a way to discover and own music without relying on streaming services. this tool lets you build a local library based on what you already like
+
 ## install
 
 you need:
