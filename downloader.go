@@ -5,40 +5,39 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 func downloadTrack(artist, track, outputDir string) error {
-	query := fmt.Sprintf("%s %s audio", artist, track)
-	
-	fmt.Printf("Downloading: %s - %s\n", artist, track)
-	
+	logInfo("Downloading: %s - %s\n", artist, track)
+
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %v", err)
 	}
-	
-	outputPath := filepath.Join(outputDir, "%(title)s.%(ext)s")
-	archivePath := filepath.Join(outputDir, ".forage-archive.txt")
-	
-	cmd := exec.Command("yt-dlp", 
+
+	// Create filename from artist and track
+	filename := fmt.Sprintf("%s - %s.mp3", artist, track)
+	outputPath := filepath.Join(outputDir, filename)
+
+	// Check if file already exists
+	if _, err := os.Stat(outputPath); err == nil {
+		logInfo("⊘ Already exists, skipping\n\n")
+		return fmt.Errorf("skipped")
+	}
+
+	query := fmt.Sprintf("%s %s audio", artist, track)
+
+	cmd := exec.Command("yt-dlp",
 		"-x",
 		"--audio-format", "mp3",
 		"-o", outputPath,
-		"--download-archive", archivePath,
 		fmt.Sprintf("ytsearch1:%s", query))
-	
+
 	output, err := cmd.CombinedOutput()
-	
-	// Check if skipped
-	if strings.Contains(string(output), "has already been recorded in the archive") {
-		fmt.Printf("⊘ Already exists, skipping\n\n")
-		return fmt.Errorf("skipped")
-	}
-	
+
 	if err != nil {
 		return fmt.Errorf("download failed: %v\n%s", err, string(output))
 	}
-	
-	fmt.Printf("✓ Downloaded\n\n")
+
+	logInfo("✓ Downloaded\n\n")
 	return nil
 }
