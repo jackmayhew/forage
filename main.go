@@ -25,13 +25,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Define flags
+	// Flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
 	outputFlag := flag.String("output", "./downloads", "Output directory for downloaded tracks")
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
 	flag.Parse()
 
 	setQuietMode(*quietFlag)
+
+	if *countFlag > 50 {
+		fmt.Println("Count cannot exceed 50 (Last.fm API limit)")
+		os.Exit(1)
+	}
 
 	args := flag.Args()
 	if len(args) < 1 {
