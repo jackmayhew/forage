@@ -27,8 +27,8 @@ SPOTIFY_CLIENT_SECRET=your_secret
 LASTFM_API_KEY=your_key
 ```
 
-get spotify credentials: https://developer.spotify.com/dashboard
-get lastfm key: https://www.last.fm/api/account/create
+- get spotify credentials: https://developer.spotify.com/dashboard
+- get lastfm key: https://www.last.fm/api/account/create
 
 ## usage
 
@@ -53,7 +53,7 @@ flags:
 1. gets track info from spotify
 2. finds similar tracks on last.fm
 3. downloads from youtube as mp3
-4. adds metadata and album art
+4. adds metadata and album art from spotify
 
 files are named `Artist - Track.mp3` and automatically skips download if already downloaded
 
