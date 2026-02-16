@@ -67,7 +67,7 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 
 - requires free spotify and last.fm api accounts
 - downloads audio from youtube (quality varies)
-- first download can be slow while yt-dlp searches
+- downloads can be slow (yt-dlp searches YouTube for each track)
 
 ## roadmap
 
