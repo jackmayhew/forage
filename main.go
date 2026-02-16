@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -12,6 +13,11 @@ import (
 func main() {
 	godotenv.Load()
 
+	if len(os.Args) > 1 && os.Args[1] == "config" {
+		handleConfig()
+		return
+	}
+	
 	// Flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
 	outputFlag := flag.String("output", "./foraged-tracks", "Output directory for foraged tracks")
@@ -19,31 +25,14 @@ func main() {
 	onlyFlag := flag.Bool("only", false, "Only download the provided track")
 	includeSourceFlag := flag.Bool("include-source", false, "Include the provided track in the download")
 	textInputFlag := flag.String("text", "", "Search for a track by 'Artist - Song Title'")
-	configFlag := flag.Bool("config", false, "Open the config file (creates if missing)")
 	flag.Parse()
 	
-	setQuietMode(*quietFlag)
-	
-	if *configFlag {
-		path, err := getConfigPath()
-		if err != nil {
-			logAlways("Error: %v\n", err)
-			os.Exit(1)
-		}
-
-		// Create if it doesn't exist
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			if err := createConfigTemplate(); err != nil {
-				logAlways("Error creating config: %v\n", err)
-				os.Exit(1)
-			}
-			logAlways("✓ Created config template at: %s\n", path)
-		}
-
-		logAlways("Opening config file...\n")
-		openFile(path)
-		os.Exit(0)
+	if *textInputFlag != "" && strings.HasPrefix(*textInputFlag, "-") {
+		logAlways("Error: search text cannot start with '-' (did you forget the value for --text?)\n")
+		os.Exit(1)
 	}
+	
+	setQuietMode(*quietFlag)
 	
 	isFlagPassed := func(name string) bool {
 		found := false
@@ -55,7 +44,7 @@ func main() {
 
 	config, err := loadConfig()
 	if err != nil {
-		logAlways("Error: %v. Run 'forage --config' to set up.\n", err)
+		logAlways("Error: %v. Run 'forage config' to set up.\n", err)
 		os.Exit(1)
 	}
 
@@ -84,14 +73,14 @@ func main() {
 
 	args := flag.Args()
 	if len(args) < 1 && *textInputFlag == "" {
-		logAlways("Usage: forage <spotify-url> | --text 'Artist - Song Title' [flags]\n")
+		logAlways("Usage:\n  forage <spotify-url>\n  forage --text 'Artist - Song'\n  forage config\n")
 		os.Exit(1)
 	}
 
 	var trackID string
 	if *textInputFlag != "" {
 		// --text
-		foundTrack, err := searchSpotifyTrack(token, *textInputFlag)
+		foundTrack, err := searchTrackGeneral(token, *textInputFlag)
 		if err != nil {
 			logError("Error searching for track '%s': %v\n", *textInputFlag, err)
 			os.Exit(1)
@@ -184,8 +173,8 @@ func main() {
 
 	if !*onlyFlag {
 		for _, t := range similarTracks {
-			similarTrackInfo, err := getTrackInfoBySearch(token, t.Artist.Name, t.Name)
-			
+			similarTrackInfo, err := searchTrackMetadata(token, t.Artist.Name, t.Name)
+
 			var album, albumArtURL string
 			if err == nil && similarTrackInfo != nil {
 				album = similarTrackInfo.Album.Name

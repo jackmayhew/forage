@@ -72,6 +72,25 @@ func loadConfig() (*Config, error) {
 	return &config, nil
 }
 
+func handleConfig() {
+    path, err := getConfigPath()
+    if err != nil {
+        logAlways("Error: %v\n", err)
+        os.Exit(1)
+    }
+
+    if _, err := os.Stat(path); os.IsNotExist(err) {
+        if err := createConfigTemplate(); err != nil {
+            logAlways("Error creating config: %v\n", err)
+            os.Exit(1)
+        }
+        logAlways("✓ Created config template at: %s\n", path)
+    }
+
+    logAlways("Opening config file...\n")
+    openFile(path)
+}
+
 func createConfigTemplate() error {
 	configPath, err := getConfigPath()
 	if err != nil {

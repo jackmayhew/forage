@@ -31,7 +31,6 @@ type SpotifyTrack struct {
 
 func getSpotifyToken(clientID, clientSecret string) (string, error) {
 	authURL := "https://accounts.spotify.com/api/token"
-
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 
@@ -50,14 +49,8 @@ func getSpotifyToken(clientID, clientSecret string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
 	var authResp SpotifyAuthResponse
-	err = json.Unmarshal(body, &authResp)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&authResp); err != nil {
 		return "", err
 	}
 
@@ -71,7 +64,6 @@ func getTrackInfo(token, trackID string) (*SpotifyTrack, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	client := &http.Client{}
@@ -81,70 +73,21 @@ func getTrackInfo(token, trackID string) (*SpotifyTrack, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var track SpotifyTrack
-	err = json.Unmarshal(body, &track)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&track); err != nil {
 		return nil, err
 	}
 
 	return &track, nil
 }
 
-func getTrackInfoBySearch(token, artist, track string) (*SpotifyTrack, error) {
-	query := fmt.Sprintf("track:%s artist:%s", track, artist)
-	searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", 
-		url.QueryEscape(query))
-
-	req, err := http.NewRequest("GET", searchURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var result struct {
-		Tracks struct {
-			Items []SpotifyTrack `json:"items"`
-		} `json:"tracks"`
-	}
-
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(result.Tracks.Items) == 0 {
-		return nil, fmt.Errorf("track not found")
-	}
-
-	return &result.Tracks.Items[0], nil
-}
-
-func searchSpotifyTrack(token, query string) (*SpotifyTrack, error) {
+func spotifySearch(token, query string) (*SpotifyTrack, error) {
 	searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(query))
 
 	req, err := http.NewRequest("GET", searchURL, nil)
 	if err != nil {
 		return nil, err
 	}
-
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	client := &http.Client{}
@@ -156,7 +99,7 @@ func searchSpotifyTrack(token, query string) (*SpotifyTrack, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("spotify search API responded with status %d: %s", resp.StatusCode, string(bodyBytes))
+		return nil, fmt.Errorf("spotify API error (%d): %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	var result struct {
@@ -165,14 +108,22 @@ func searchSpotifyTrack(token, query string) (*SpotifyTrack, error) {
 		} `json:"tracks"`
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
 	if len(result.Tracks.Items) == 0 {
-		return nil, fmt.Errorf("no track found for '%s'", query)
+		return nil, fmt.Errorf("no track found")
 	}
 
 	return &result.Tracks.Items[0], nil
+}
+
+func searchTrackMetadata(token, artist, track string) (*SpotifyTrack, error) {
+	query := fmt.Sprintf("track:%s artist:%s", track, artist)
+	return spotifySearch(token, query)
+}
+
+func searchTrackGeneral(token, query string) (*SpotifyTrack, error) {
+	return spotifySearch(token, query)
 }
