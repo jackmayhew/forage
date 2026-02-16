@@ -14,7 +14,7 @@ i wanted a way to discover and download music without relying on streaming servi
 
 ## install
 
-**using pre-built binaries (recommended):**
+# **using pre-built binaries (recommended):**
 
 1. download the latest release for your platform from [releases](https://github.com/jackmayhew/forage/releases)
    - **macos:** use `darwin-arm64` for m1/m2/m3 or `darwin-amd64` for intel
@@ -55,7 +55,36 @@ notepad %USERPROFILE%\.config\forage\config.yaml  # windows
    - get spotify credentials: https://developer.spotify.com/dashboard
    - get lastfm key: https://www.last.fm/api/account/create
 
-**building from source:**
+
+## usage
+
+basic:
+```bash
+forage "https://open.spotify.com/track/2Ud3deeqLAG988pfW0Kwcl?si=e1f747637ed241b6"
+```
+
+with flags:
+```bash
+# get 5 similar tracks
+forage --count 5 "https://open.spotify.com/track/..."
+
+# download only the provided track (no similar songs)
+forage --only "https://open.spotify.com/track/..."
+
+# download the provided track plus similar tracks
+forage --include-source "https://open.spotify.com/track/..."
+```
+flags:
+- `--setup` - create config file template
+- `--count N` - number of similar tracks (max: 50, default: 10)
+- `--output DIR` - where to save files (default: `./foraged-tracks`)
+- `--only` - only download the provided track
+- `--include-source` - include the provided track in the download
+- `--quiet` - minimal output
+
+> **Tip:** You can set **persistent preferences** for these flags (like `default_count` or `output_dir`) in your `config.yaml` file so you don't have to type them every time
+
+# **building from source:**
 
 you need:
 - go 1.21+
@@ -73,20 +102,6 @@ SPOTIFY_CLIENT_ID=your_id
 SPOTIFY_CLIENT_SECRET=your_secret
 LASTFM_API_KEY=your_key
 ```
-
-## usage
-
-basic:
-```bash
-forage "https://open.spotify.com/track/2Ud3deeqLAG988pfW0Kwcl?si=e1f747637ed241b6"
-```
-
-flags:
-- `--setup` - create config file template
-- `--count N` - number of similar tracks (max: 50, default: 10)
-- `--output DIR` - where to save files (default: ./downloads)
-- `--quiet` - minimal output
-
 **note:** 
 - when building from source: use `./forage` 
 - for development: use `go run .`
