@@ -10,20 +10,21 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
+	godotenv.Load()
+	
+	config, err := loadConfig()
 	if err != nil {
-		fmt.Println("Error loading .env file")
+		fmt.Printf("Error loading config: %v\n", err)
+		fmt.Println("\nTo set up credentials, create ~/.config/forage/config.yaml:")
+		fmt.Println("spotify_client_id: your_id")
+		fmt.Println("spotify_client_secret: your_secret")
+		fmt.Println("lastfm_api_key: your_key")
 		os.Exit(1)
 	}
 
-	spotifyClientID := os.Getenv("SPOTIFY_CLIENT_ID")
-	spotifyClientSecret := os.Getenv("SPOTIFY_CLIENT_SECRET")
-	lastfmAPIKey := os.Getenv("LASTFM_API_KEY")
-
-	if spotifyClientID == "" || spotifyClientSecret == "" || lastfmAPIKey == "" {
-		fmt.Println("Missing credentials in .env file")
-		os.Exit(1)
-	}
+	spotifyClientID := config.SpotifyClientID
+	spotifyClientSecret := config.SpotifyClientSecret
+	lastfmAPIKey := config.LastFmAPIKey
 
 	// Flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
