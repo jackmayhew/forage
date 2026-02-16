@@ -1,8 +1,8 @@
 # 🍄 forage
 
-<img src="demo.gif" width="600">
-
 cli tool to find and download similar music from a spotify track
+
+<img src="demo.gif" width="600">
 
 ## what it does
 
@@ -83,3 +83,4 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 - retry logic for failed downloads
 - binary releases for different platforms
 - custom metadata template options
+- improved audio source matching (spotdl integration)
