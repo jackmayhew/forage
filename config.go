@@ -55,10 +55,7 @@ func loadConfig() (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			if err := createConfigTemplate(); err != nil {
-				return nil, fmt.Errorf("failed to create config template: %v", err)
-			}
-			return nil, fmt.Errorf("created config template at %s - please add your API credentials", configPath)
+			return nil, fmt.Errorf("config file not found")
 		}
 		return nil, err
 	}
@@ -69,7 +66,7 @@ func loadConfig() (*Config, error) {
 	}
 	
 	if config.SpotifyClientID == "" || config.SpotifyClientSecret == "" || config.LastFmAPIKey == "" {
-		return nil, fmt.Errorf("missing credentials in config file")
+		return nil, fmt.Errorf("missing credentials")
 	}
 	
 	return &config, nil

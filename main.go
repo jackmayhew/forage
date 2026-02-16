@@ -11,45 +11,37 @@ import (
 
 func main() {
 	godotenv.Load()
-	
+
 	// Flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
 	outputFlag := flag.String("output", "./foraged-tracks", "Output directory for foraged tracks")
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
 	onlyFlag := flag.Bool("only", false, "Only download the provided track")
 	includeSourceFlag := flag.Bool("include-source", false, "Include the provided track in the download")
-	setupFlag := flag.Bool("setup", false, "Create config file template")
+	configFlag := flag.Bool("config", false, "Open the config file (creates if missing)")
 	flag.Parse()
 	
 	setQuietMode(*quietFlag)
 	
-	if *setupFlag {
-		configPath, err := getConfigPath()
+	if *configFlag {
+		path, err := getConfigPath()
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
+			logAlways("Error: %v\n", err)
 			os.Exit(1)
 		}
-		
-		if err := createConfigTemplate(); err != nil {
-			fmt.Printf("Error creating config template: %v\n", err)
-			os.Exit(1)
+
+		// Create if it doesn't exist
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			if err := createConfigTemplate(); err != nil {
+				logAlways("Error creating config: %v\n", err)
+				os.Exit(1)
+			}
+			logAlways("✓ Created config template at: %s\n", path)
 		}
-		
-		fmt.Printf("✓ Created config template at: %s\n", configPath)
-		logAlways("\nAdd your API credentials:")
-		logAlways("- Spotify: https://developer.spotify.com/dashboard")
-		logAlways("- Last.fm: https://www.last.fm/api/account/create")
+
+		logAlways("Opening config file...\n")
+		openFile(path)
 		os.Exit(0)
-	}
-	
-	config, err := loadConfig()
-	if err != nil {
-		fmt.Printf("Error loading config: %v\n", err)
-		logAlways("\nTo set up credentials, create ~/.config/forage/config.yaml:")
-		logAlways("spotify_client_id: your_id")
-		logAlways("spotify_client_secret: your_secret")
-		logAlways("lastfm_api_key: your_key")
-		os.Exit(1)
 	}
 	
 	isFlagPassed := func(name string) bool {
@@ -58,6 +50,12 @@ func main() {
 			if f.Name == name { found = true }
 		})
 		return found
+	}
+
+	config, err := loadConfig()
+	if err != nil {
+		logAlways("Error: %v. Run 'forage --config' to set up.\n", err)
+		os.Exit(1)
 	}
 
 	spotifyClientID := config.SpotifyClientID
