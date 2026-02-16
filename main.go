@@ -52,10 +52,24 @@ func main() {
 		os.Exit(1)
 	}
 	
+	isFlagPassed := func(name string) bool {
+		found := false
+		flag.Visit(func(f *flag.Flag) {
+			if f.Name == name { found = true }
+		})
+		return found
+	}
+
 	spotifyClientID := config.SpotifyClientID
 	spotifyClientSecret := config.SpotifyClientSecret
 	lastfmAPIKey := config.LastFmAPIKey
+	if !isFlagPassed("count") && config.DefaultCount > 0 { *countFlag = config.DefaultCount }
+	if !isFlagPassed("output") && config.OutputDir != "" { *outputFlag = config.OutputDir }
+	if !isFlagPassed("quiet") { *quietFlag = config.QuietMode }
+	if !isFlagPassed("include-source") { *includeSourceFlag = config.IncludeSource }
 
+	setQuietMode(*quietFlag)
+	
 	if *countFlag > 50 {
 		fmt.Println("Count cannot exceed 50 (Last.fm API limit)")
 		os.Exit(1)

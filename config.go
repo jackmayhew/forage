@@ -12,6 +12,10 @@ type Config struct {
 	SpotifyClientID     string `yaml:"spotify_client_id"`
 	SpotifyClientSecret string `yaml:"spotify_client_secret"`
 	LastFmAPIKey        string `yaml:"lastfm_api_key"`
+	DefaultCount        int    `yaml:"default_count"`
+    OutputDir           string `yaml:"output_dir"`
+	QuietMode           bool   `yaml:"quiet_mode"`
+    IncludeSource       bool   `yaml:"include_source"`
 }
 
 func getConfigPath() (string, error) {
@@ -77,7 +81,8 @@ func createConfigTemplate() error {
 		return err
 	}
 	
-	template := `# Forage configuration
+	template := `
+# Forage configuration
 # Get credentials from:
 # Spotify: https://developer.spotify.com/dashboard
 # Last.fm: https://www.last.fm/api/account/create
@@ -85,6 +90,10 @@ func createConfigTemplate() error {
 spotify_client_id: ""
 spotify_client_secret: ""
 lastfm_api_key: ""
+default_count: 10
+output_dir: "./foraged-tracks"
+quiet_mode: false
+include_source: false
 `
 	
 	return os.WriteFile(configPath, []byte(template), 0644)
