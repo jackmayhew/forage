@@ -1,5 +1,7 @@
 # 🍄 forage
 
+![demo](demo.gif)
+
 cli tool to find and download similar music from a spotify track
 
 ## what it does
