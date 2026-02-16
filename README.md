@@ -1,6 +1,6 @@
 # 🍄 forage
 
-<img src="demo.gif" width="600" loop>
+<img src="demo.gif" width="600">
 
 cli tool to find and download similar music from a spotify track
 
@@ -69,9 +69,17 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 - downloads audio from youtube (quality varies)
 - first download can be slow while yt-dlp searches
 
-## future improvements
+## roadmap
 
+**features:**
+- similar artist search
+- spotify playlist support
+- interactive track selection
+- genre filtering
+- exclude artist flag
+
+**technical:**
 - concurrent downloads with worker pool
-- support for spotify playlists
-- retry logic for failed youtube searches
+- retry logic for failed downloads
+- binary releases for different platforms
 - custom metadata template options
