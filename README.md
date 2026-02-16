@@ -42,18 +42,13 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 - move `forage-windows-amd64.exe` to a folder in your PATH
 - or run it directly from the download location
 
-3. run setup to create config template:
+3. set up credentials:
 ```bash
-forage --setup
+forage --config
 ```
-4. edit the config file with your api credentials:
-```bash
-open -e ~/.config/forage/config.yaml  # macos
-nano ~/.config/forage/config.yaml     # linux
-notepad %USERPROFILE%\.config\forage\config.yaml  # windows
-```
-   - get spotify credentials: https://developer.spotify.com/dashboard
-   - get lastfm key: https://www.last.fm/api/account/create
+this command will create and open the `config.yaml` file in your default editor
+- get spotify credentials: https://developer.spotify.com/dashboard
+- get lastfm key: https://www.last.fm/api/account/create
 
 
 ## usage
@@ -73,9 +68,12 @@ forage --only "https://open.spotify.com/track/..."
 
 # download the provided track plus similar tracks
 forage --include-source "https://open.spotify.com/track/..."
+
+# Open the config file
+forage --config
 ```
 flags:
-- `--setup` - create config file template
+- `--config` - open the `config.yaml` file (creates if missing)
 - `--count N` - number of similar tracks (max: 50, default: 10)
 - `--output DIR` - where to save files (default: `./foraged-tracks`)
 - `--only` - only download the provided track
