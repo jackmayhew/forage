@@ -91,3 +91,7 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 - retry logic for failed downloads
 - custom metadata template options
 - improved audio source matching (spotdl integration)
+
+## disclaimer
+
+this tool is for educational purposes only. please support artists by purchasing their music or using official streaming services. the developers of forage are not responsible for any misuse of this tool
