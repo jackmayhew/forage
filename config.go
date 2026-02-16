@@ -14,7 +14,7 @@ type Config struct {
 	LastFmAPIKey        string `yaml:"lastfm_api_key"`
 }
 
-func GetConfigPath() (string, error) {
+func getConfigPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
@@ -71,7 +71,7 @@ func loadConfig() (*Config, error) {
 	return &config, nil
 }
 
-func CreateConfigTemplate() error {
+func createConfigTemplate() error {
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err

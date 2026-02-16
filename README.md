@@ -50,10 +50,6 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 ```
    - get spotify credentials: https://developer.spotify.com/dashboard
    - get lastfm key: https://www.last.fm/api/account/create
-   
-4. edit the config file with your API credentials:
-   - get spotify credentials: https://developer.spotify.com/dashboard
-   - get lastfm key: https://www.last.fm/api/account/create
 
 **building from source:**
 
