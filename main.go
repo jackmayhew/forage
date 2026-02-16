@@ -92,14 +92,14 @@ func main() {
 	// Spotify access token
 	token, err := getSpotifyToken(spotifyClientID, spotifyClientSecret)
 	if err != nil {
-		fmt.Printf("Error getting Spotify token: %v\n", err)
+		logError("Error getting Spotify token: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Track info from Spotify
 	track, err := getTrackInfo(token, trackID)
 	if err != nil {
-		fmt.Printf("Error getting track info: %v\n", err)
+		logError("Error getting track info: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -122,7 +122,7 @@ func main() {
 		var err error
 		similarTracks, err = getSimilarTracks(lastfmAPIKey, artistName, trackName, *countFlag)
 		if err != nil {
-			fmt.Printf("Error getting similar tracks: %v\n", err)
+			logError("Error getting similar tracks: %v\n", err)
 			os.Exit(1)
 		}
 	}
@@ -133,13 +133,13 @@ func main() {
 	}
 
 	if !*onlyFlag && len(similarTracks) > 0 {
-		logInfo("\nFound %d similar tracks:\n\n", len(similarTracks))
+		logAlways("\nFound %d similar tracks:\n\n", len(similarTracks))
 		for i, t := range similarTracks {
 			logInfo("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
 		}
 	}
 
-	logInfo("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
+	logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
 
 	var failures []string
 	successCount := 0
