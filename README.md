@@ -40,13 +40,13 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 
 3. run setup to create config template:
 ```bash
-   forage --setup
+forage --setup
 ```
 4. edit the config file with your API credentials:
 ```bash
-   open -e ~/.config/forage/config.yaml  # macos
-   nano ~/.config/forage/config.yaml     # linux
-   notepad %USERPROFILE%\.config\forage\config.yaml  # windows
+open -e ~/.config/forage/config.yaml  # macos
+nano ~/.config/forage/config.yaml     # linux
+notepad %USERPROFILE%\.config\forage\config.yaml  # windows
 ```
    - get spotify credentials: https://developer.spotify.com/dashboard
    - get lastfm key: https://www.last.fm/api/account/create
