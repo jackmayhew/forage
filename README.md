@@ -4,7 +4,7 @@ cli tool to find and download similar music from a spotify track
 
 <img src="demo.gif" width="600">
 
-## what it does
+## about
 
 paste a spotify track url, and forage finds similar songs on last.fm and downloads them as mp3s with metadata and album art
 
