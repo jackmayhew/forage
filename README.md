@@ -14,9 +14,34 @@ i wanted a way to discover and download music without relying on streaming servi
 
 ## install
 
-**using pre-built binaries:**
+**using pre-built binaries (recommended):**
 
-download the latest release for your platform from [releases](https://github.com/jackmayhew/forage/releases)
+1. download the latest release for your platform from [releases](https://github.com/jackmayhew/forage/releases)
+2. install the binary:
+
+**macos/linux:**
+```bash
+# navigate to your downloads folder
+cd ~/Downloads
+
+# make the binary executable
+chmod +x forage-darwin-arm64  # or forage-linux-amd64
+
+# move to system path
+sudo mv forage-darwin-arm64 /usr/local/bin/forage
+
+# macos only: remove quarantine flag
+sudo xattr -d com.apple.quarantine /usr/local/bin/forage
+```
+
+**windows:**
+- move `forage-windows-amd64.exe` to a folder in your PATH
+- or run it directly from the download location
+
+3. run `forage` - it will create a config template at `~/.config/forage/config.yaml`
+4. edit the config file with your API credentials:
+   - get spotify credentials: https://developer.spotify.com/dashboard
+   - get lastfm key: https://www.last.fm/api/account/create
 
 **building from source:**
 
@@ -30,37 +55,34 @@ cd forage
 go build
 ```
 
-## setup
-
-create a `.env` file:
+for development, create a `.env` file:
 ```
 SPOTIFY_CLIENT_ID=your_id
 SPOTIFY_CLIENT_SECRET=your_secret
 LASTFM_API_KEY=your_key
 ```
 
-- get spotify credentials: https://developer.spotify.com/dashboard
-- get lastfm key: https://www.last.fm/api/account/create
-
 ## usage
-
-**note:** if using pre-built binaries, replace `./forage` with just `forage` (or the full path to the binary)
 
 basic:
 ```bash
-./forage "https://open.spotify.com/track/2Ud3deeqLAG988pfW0Kwcl?si=e1f747637ed241b6"
+forage "https://open.spotify.com/track/2Ud3deeqLAG988pfW0Kwcl?si=e1f747637ed241b6"
 ```
 
 options:
 ```bash
-./forage --count 5 --output ~/Music "spotify-url"
-./forage --quiet "spotify-url"
+forage --count 5 --output ~/Music "spotify-url"
+forage --quiet "spotify-url"
 ```
 
 flags:
 - `--count N` - number of similar tracks (max: 50, default: 10)
 - `--output DIR` - where to save files (default: ./downloads)
 - `--quiet` - minimal output
+
+**note:** 
+- when building from source: use `./forage` 
+- for development: use `go run .`
 
 ## how it works
 
