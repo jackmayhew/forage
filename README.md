@@ -1,6 +1,6 @@
 # 🍄 forage
 
-![demo](demo.gif)
+<img src="demo.gif" width="600" loop>
 
 cli tool to find and download similar music from a spotify track
 
