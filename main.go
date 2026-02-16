@@ -36,19 +36,19 @@ func main() {
 		}
 		
 		fmt.Printf("✓ Created config template at: %s\n", configPath)
-		fmt.Println("\nAdd your API credentials:")
-		fmt.Println("- Spotify: https://developer.spotify.com/dashboard")
-		fmt.Println("- Last.fm: https://www.last.fm/api/account/create")
+		logAlways("\nAdd your API credentials:")
+		logAlways("- Spotify: https://developer.spotify.com/dashboard")
+		logAlways("- Last.fm: https://www.last.fm/api/account/create")
 		os.Exit(0)
 	}
 	
 	config, err := loadConfig()
 	if err != nil {
 		fmt.Printf("Error loading config: %v\n", err)
-		fmt.Println("\nTo set up credentials, create ~/.config/forage/config.yaml:")
-		fmt.Println("spotify_client_id: your_id")
-		fmt.Println("spotify_client_secret: your_secret")
-		fmt.Println("lastfm_api_key: your_key")
+		logAlways("\nTo set up credentials, create ~/.config/forage/config.yaml:")
+		logAlways("spotify_client_id: your_id")
+		logAlways("spotify_client_secret: your_secret")
+		logAlways("lastfm_api_key: your_key")
 		os.Exit(1)
 	}
 	
@@ -71,13 +71,13 @@ func main() {
 	setQuietMode(*quietFlag)
 	
 	if *countFlag > 50 {
-		fmt.Println("Count cannot exceed 50 (Last.fm API limit)")
+		logAlways("Count cannot exceed 50 (Last.fm API limit)")
 		os.Exit(1)
 	}
 
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Println("Usage: forage <spotify-url> [--count N] [--output DIR] [--quiet]")
+		logAlways("Usage: forage <spotify-url> [--count N] [--output DIR] [--quiet]")
 		os.Exit(1)
 	}
 
@@ -85,7 +85,7 @@ func main() {
 	trackID := extractTrackID(spotifyURL)
 
 	if trackID == "" {
-		fmt.Println("Invalid Spotify URL")
+		logAlways("Invalid Spotify URL")
 		os.Exit(1)
 	}
 
@@ -106,7 +106,7 @@ func main() {
 	}
 
 	if len(track.Artists) == 0 {
-		fmt.Println("Track not found or has no artist information")
+		logAlways("Track not found or has no artist information")
 		os.Exit(1)
 	}
 
