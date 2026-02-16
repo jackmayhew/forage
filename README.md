@@ -14,6 +14,12 @@ i wanted a way to discover and download music without relying on streaming servi
 
 ## install
 
+**using pre-built binaries:**
+
+download the latest release for your platform from [releases](https://github.com/jackmayhew/forage/releases)
+
+**building from source:**
+
 you need:
 - go 1.21+
 - yt-dlp: `brew install yt-dlp`
@@ -37,6 +43,8 @@ LASTFM_API_KEY=your_key
 - get lastfm key: https://www.last.fm/api/account/create
 
 ## usage
+
+**note:** if using pre-built binaries, replace `./forage` with just `forage` (or the full path to the binary)
 
 basic:
 ```bash
@@ -81,6 +89,5 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 **technical:**
 - concurrent downloads with worker pool
 - retry logic for failed downloads
-- binary releases for different platforms
 - custom metadata template options
 - improved audio source matching (spotdl integration)
