@@ -34,43 +34,37 @@ func getConfigPath() (string, error) {
 }
 
 func loadConfig() (*Config, error) {
-	// Try .env first (for development)
-	spotifyClientID := os.Getenv("SPOTIFY_CLIENT_ID")
-	spotifyClientSecret := os.Getenv("SPOTIFY_CLIENT_SECRET")
-	lastfmAPIKey := os.Getenv("LASTFM_API_KEY")
-	
-	if spotifyClientID != "" && spotifyClientSecret != "" && lastfmAPIKey != "" {
-		return &Config{
-			SpotifyClientID:     spotifyClientID,
-			SpotifyClientSecret: spotifyClientSecret,
-			LastFmAPIKey:        lastfmAPIKey,
-		}, nil
+	// defaults
+	config := &Config{
+		DefaultCount:  10,
+		OutputDir:     "./foraged-tracks",
+		QuietMode:     false,
+		IncludeSource: false,
+		UseText:       false,
 	}
-	
-	// Try config file
+
 	configPath, err := getConfigPath()
-	if err != nil {
-		return nil, err
-	}
-	
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("config file not found")
+	if err == nil {
+		if data, err := os.ReadFile(configPath); err == nil {
+			_ = yaml.Unmarshal(data, config)
 		}
-		return nil, err
 	}
-	
-	var config Config
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, err
+
+	if envID := os.Getenv("SPOTIFY_CLIENT_ID"); envID != "" {
+		config.SpotifyClientID = envID
 	}
-	
+	if envSecret := os.Getenv("SPOTIFY_CLIENT_SECRET"); envSecret != "" {
+		config.SpotifyClientSecret = envSecret
+	}
+	if envKey := os.Getenv("LASTFM_API_KEY"); envKey != "" {
+		config.LastFmAPIKey = envKey
+	}
+
 	if config.SpotifyClientID == "" || config.SpotifyClientSecret == "" || config.LastFmAPIKey == "" {
 		return nil, fmt.Errorf("missing credentials")
 	}
-	
-	return &config, nil
+
+	return config, nil
 }
 
 func handleConfig() {
