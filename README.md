@@ -46,7 +46,7 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 ```bash
 forage --setup
 ```
-4. edit the config file with your API credentials:
+4. edit the config file with your api credentials:
 ```bash
 open -e ~/.config/forage/config.yaml  # macos
 nano ~/.config/forage/config.yaml     # linux
