@@ -51,7 +51,10 @@ func loadConfig() (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("config not found. create %s with your API credentials", configPath)
+			if err := createConfigTemplate(); err != nil {
+				return nil, fmt.Errorf("failed to create config template: %v", err)
+			}
+			return nil, fmt.Errorf("created config template at %s - please add your API credentials", configPath)
 		}
 		return nil, err
 	}
@@ -66,4 +69,23 @@ func loadConfig() (*Config, error) {
 	}
 	
 	return &config, nil
+}
+
+func createConfigTemplate() error {
+	configPath, err := getConfigPath()
+	if err != nil {
+		return err
+	}
+	
+	template := `# Forage configuration
+# Get credentials from:
+# Spotify: https://developer.spotify.com/dashboard
+# Last.fm: https://www.last.fm/api/account/create
+
+spotify_client_id: ""
+spotify_client_secret: ""
+lastfm_api_key: ""
+`
+	
+	return os.WriteFile(configPath, []byte(template), 0644)
 }
