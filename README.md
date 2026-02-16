@@ -69,7 +69,7 @@ forage --only "https://open.spotify.com/track/..."
 # download the provided track plus similar tracks
 forage --include-source "https://open.spotify.com/track/..."
 
-# Open the config file
+# open the config file
 forage --config
 ```
 flags:
@@ -80,7 +80,7 @@ flags:
 - `--include-source` - include the provided track in the download
 - `--quiet` - minimal output
 
-> **Tip:** You can set **persistent preferences** for these flags (like `default_count` or `output_dir`) in your `config.yaml` file so you don't have to type them every time
+> **tip:** you can set **persistent preferences** for these flags (like `default_count` or `output_dir`) in your `config.yaml` file so you don't have to type them every time
 
 # **building from source:**
 
