@@ -18,6 +18,7 @@ func main() {
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
 	onlyFlag := flag.Bool("only", false, "Only download the provided track")
 	includeSourceFlag := flag.Bool("include-source", false, "Include the provided track in the download")
+	textInputFlag := flag.String("text", "", "Search for a track by 'Artist - Song Title'")
 	configFlag := flag.Bool("config", false, "Open the config file (creates if missing)")
 	flag.Parse()
 	
@@ -61,6 +62,14 @@ func main() {
 	spotifyClientID := config.SpotifyClientID
 	spotifyClientSecret := config.SpotifyClientSecret
 	lastfmAPIKey := config.LastFmAPIKey
+
+	// Spotify access token
+	token, err := getSpotifyToken(spotifyClientID, spotifyClientSecret)
+	if err != nil {
+		logError("Error getting Spotify token: %v\n", err)
+		os.Exit(1)
+	}
+
 	if !isFlagPassed("count") && config.DefaultCount > 0 { *countFlag = config.DefaultCount }
 	if !isFlagPassed("output") && config.OutputDir != "" { *outputFlag = config.OutputDir }
 	if !isFlagPassed("quiet") { *quietFlag = config.QuietMode }
@@ -74,13 +83,25 @@ func main() {
 	}
 
 	args := flag.Args()
-	if len(args) < 1 {
-		logAlways("Usage: forage <spotify-url> [--count N] [--output DIR] [--quiet]")
+	if len(args) < 1 && *textInputFlag == "" {
+		logAlways("Usage: forage <spotify-url> | --text 'Artist - Song Title' [flags]\n")
 		os.Exit(1)
 	}
 
-	spotifyURL := args[0]
-	trackID := extractTrackID(spotifyURL)
+	var trackID string
+	if *textInputFlag != "" {
+		// --text
+		foundTrack, err := searchSpotifyTrack(token, *textInputFlag)
+		if err != nil {
+			logError("Error searching for track '%s': %v\n", *textInputFlag, err)
+			os.Exit(1)
+		}
+		trackID = foundTrack.ID
+	} else {
+		// --text not used
+		spotifyURL := args[0]
+		trackID = extractTrackID(spotifyURL)
+	}
 
 	if trackID == "" {
 		logAlways("Invalid Spotify URL")
@@ -88,13 +109,6 @@ func main() {
 	}
 
 	logInfo("Track ID: %s\n", trackID)
-
-	// Spotify access token
-	token, err := getSpotifyToken(spotifyClientID, spotifyClientSecret)
-	if err != nil {
-		logError("Error getting Spotify token: %v\n", err)
-		os.Exit(1)
-	}
 
 	// Track info from Spotify
 	track, err := getTrackInfo(token, trackID)
@@ -139,7 +153,11 @@ func main() {
 		}
 	}
 
-	logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
+	if len(similarTracks) > 0 {
+		logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
+	} else {
+		logAlways("\nNo similar tracks found. Skipping downloads.\n")
+	}
 
 	var failures []string
 	successCount := 0
@@ -192,22 +210,25 @@ func main() {
 
 	// Summary
 	logAlways("\n--- Download Summary ---\n")
-	
-	if len(failures) > 0 {
-		logAlways("✓ Downloaded: %d tracks to %s\n", successCount, *outputFlag)
-		if skippedCount > 0 {
-			logAlways("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
-		}
-		logAlways("\n✗ Failed downloads:\n")
-		for _, track := range failures {
-			logAlways("  - %s\n", track)
-		}
+
+	totalProcessed := successCount + skippedCount + len(failures)
+
+	if totalProcessed == 0 {
+		logAlways("No tracks processed.\n")
 	} else {
-		if skippedCount > 0 {
+		if successCount > 0 {
 			logAlways("✓ Downloaded: %d tracks to %s\n", successCount, *outputFlag)
+		}
+		if skippedCount > 0 {
 			logAlways("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
-		} else {
-			logAlways("✓ Downloaded %d tracks to %s\n", successCount, *outputFlag)
+		}
+		if len(failures) > 0 {
+			logAlways("\n✗ Failed downloads:\n")
+			for _, track := range failures {
+				logAlways("  - %s\n", track)
+			}
+		} else if successCount > 0 {
+			logAlways("\n✓ All downloads completed successfully!\n")
 		}
 	}
 }

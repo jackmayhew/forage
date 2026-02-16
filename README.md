@@ -73,7 +73,7 @@ forage --include-source "https://open.spotify.com/track/..."
 forage --config
 ```
 flags:
-- `--config` - open the `config.yaml` file (creates if missing)
+- `--config` - opens the `config.yaml` file (creates if missing)
 - `--count N` - number of similar tracks (max: 50, default: 10)
 - `--output DIR` - where to save files (default: `./foraged-tracks`)
 - `--only` - only download the provided track
