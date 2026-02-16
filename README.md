@@ -17,6 +17,10 @@ i wanted a way to discover and download music without relying on streaming servi
 **using pre-built binaries (recommended):**
 
 1. download the latest release for your platform from [releases](https://github.com/jackmayhew/forage/releases)
+   - **macos:** use `darwin-arm64` for M1/M2/M3 or `darwin-amd64` for Intel
+   - **linux:** use `linux-amd64`
+   - **windows:** use `windows-amd64.exe`
+
 2. install the binary:
 
 **macos/linux:**
