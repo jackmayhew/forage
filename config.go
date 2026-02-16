@@ -16,6 +16,7 @@ type Config struct {
     OutputDir           string `yaml:"output_dir"`
 	QuietMode           bool   `yaml:"quiet_mode"`
     IncludeSource       bool   `yaml:"include_source"`
+    UseText       		bool   `yaml:"use_text"`
 }
 
 func getConfigPath() (string, error) {
@@ -110,6 +111,7 @@ default_count: 10
 output_dir: "./foraged-tracks"
 quiet_mode: false
 include_source: false
+use_text: false
 `
 	
 	return os.WriteFile(configPath, []byte(template), 0644)

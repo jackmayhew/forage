@@ -44,7 +44,7 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 
 3. set up credentials:
 ```bash
-forage --config
+forage config
 ```
 this command will create and open the `config.yaml` file in your default editor
 - get spotify credentials: https://developer.spotify.com/dashboard
@@ -69,18 +69,21 @@ forage --only "https://open.spotify.com/track/..."
 # download the provided track plus similar tracks
 forage --include-source "https://open.spotify.com/track/..."
 
-# open the config file
-forage --config
+# search for a track with plain text
+forage --text "Artist - Track"
 ```
 flags:
-- `--config` - opens the `config.yaml` file (creates if missing)
 - `--count N` - number of similar tracks (max: 50, default: 10)
 - `--output DIR` - where to save files (default: `./foraged-tracks`)
 - `--only` - only download the provided track
 - `--include-source` - include the provided track in the download
+- `--text` - find spotify track with plain text (spotify uses fuzzy search. be precise for best results)
 - `--quiet` - minimal output
 
 > **tip:** you can set **persistent preferences** for these flags (like `default_count` or `output_dir`) in your `config.yaml` file so you don't have to type them every time
+
+commands:
+- `config` - opens the `config.yaml` file (creates if missing)
 
 # **building from source:**
 

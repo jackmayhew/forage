@@ -31,7 +31,7 @@ func main() {
 		logAlways("Error: search text cannot start with '-' (did you forget the value for --text?)\n")
 		os.Exit(1)
 	}
-	
+
 	setQuietMode(*quietFlag)
 	
 	isFlagPassed := func(name string) bool {
@@ -78,18 +78,37 @@ func main() {
 	}
 
 	var trackID string
+	// --text flag always takes priority
 	if *textInputFlag != "" {
-		// --text
-		foundTrack, err := searchTrackGeneral(token, *textInputFlag)
-		if err != nil {
-			logError("Error searching for track '%s': %v\n", *textInputFlag, err)
+		// check if user provided url by accident
+		if strings.Contains(*textInputFlag, "open.spotify.com") {
+			logInfo("URL detected in --text flag, extracting ID...\n")
+			trackID = extractTrackID(*textInputFlag)
+		} else {
+			foundTrack, err := searchTrackGeneral(token, *textInputFlag)
+			if err != nil {
+				logError("Error searching for track '%s': %v\n", *textInputFlag, err)
+				os.Exit(1)
+			}
+			trackID = foundTrack.ID
+		}
+	} else {
+		input := args[0]
+		// check if it's a url or if we should treat it as text
+		if strings.Contains(input, "open.spotify.com") {
+			trackID = extractTrackID(input)
+		} else if config.UseText {
+			logInfo("Treating input as search query (use_text: true)...\n")
+			foundTrack, err := searchTrackGeneral(token, input)
+			if err != nil {
+				logError("Error searching for track '%s': %v\n", input, err)
+				os.Exit(1)
+			}
+			trackID = foundTrack.ID
+		} else {
+			logAlways("Invalid Spotify URL. Use --text for search or enable 'use_text' in config.\n")
 			os.Exit(1)
 		}
-		trackID = foundTrack.ID
-	} else {
-		// --text not used
-		spotifyURL := args[0]
-		trackID = extractTrackID(spotifyURL)
 	}
 
 	if trackID == "" {
