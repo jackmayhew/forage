@@ -30,10 +30,30 @@ func main() {
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
 	outputFlag := flag.String("output", "./downloads", "Output directory for downloaded tracks")
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
+	setupFlag := flag.Bool("setup", false, "Create config file template")
 	flag.Parse()
 
 	setQuietMode(*quietFlag)
 
+	if *setupFlag {
+		configPath, err := getConfigPath()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		
+		if err := createConfigTemplate(); err != nil {
+			fmt.Printf("Error creating config template: %v\n", err)
+			os.Exit(1)
+		}
+		
+		fmt.Printf("✓ Created config template at: %s\n", configPath)
+		fmt.Println("\nAdd your API credentials:")
+		fmt.Println("- Spotify: https://developer.spotify.com/dashboard")
+		fmt.Println("- Last.fm: https://www.last.fm/api/account/create")
+		os.Exit(0)
+	}
+	
 	if *countFlag > 50 {
 		fmt.Println("Count cannot exceed 50 (Last.fm API limit)")
 		os.Exit(1)
