@@ -98,7 +98,7 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 
 ## notes
 
-- requires free spotify and last.fm api accounts
+- requires free spotify and last.fm api keys
 - downloads audio from youtube (quality varies)
 - downloads can be slow (yt-dlp searches youtube for each track)
 
