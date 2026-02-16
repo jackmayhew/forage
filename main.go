@@ -12,29 +12,15 @@ import (
 func main() {
 	godotenv.Load()
 	
-	config, err := loadConfig()
-	if err != nil {
-		fmt.Printf("Error loading config: %v\n", err)
-		fmt.Println("\nTo set up credentials, create ~/.config/forage/config.yaml:")
-		fmt.Println("spotify_client_id: your_id")
-		fmt.Println("spotify_client_secret: your_secret")
-		fmt.Println("lastfm_api_key: your_key")
-		os.Exit(1)
-	}
-
-	spotifyClientID := config.SpotifyClientID
-	spotifyClientSecret := config.SpotifyClientSecret
-	lastfmAPIKey := config.LastFmAPIKey
-
 	// Flags
 	countFlag := flag.Int("count", 10, "Number of similar tracks to find")
 	outputFlag := flag.String("output", "./downloads", "Output directory for downloaded tracks")
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
 	setupFlag := flag.Bool("setup", false, "Create config file template")
 	flag.Parse()
-
+	
 	setQuietMode(*quietFlag)
-
+	
 	if *setupFlag {
 		configPath, err := getConfigPath()
 		if err != nil {
@@ -54,6 +40,22 @@ func main() {
 		os.Exit(0)
 	}
 	
+	config, err := loadConfig()
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+		fmt.Println("\nTo set up credentials, create ~/.config/forage/config.yaml:")
+		fmt.Println("spotify_client_id: your_id")
+		fmt.Println("spotify_client_secret: your_secret")
+		fmt.Println("lastfm_api_key: your_key")
+		os.Exit(1)
+	}
+	
+	spotifyClientID := config.SpotifyClientID
+	spotifyClientSecret := config.SpotifyClientSecret
+	lastfmAPIKey := config.LastFmAPIKey
+
+	setQuietMode(*quietFlag)
+
 	if *countFlag > 50 {
 		fmt.Println("Count cannot exceed 50 (Last.fm API limit)")
 		os.Exit(1)
