@@ -38,7 +38,19 @@ sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 - move `forage-windows-amd64.exe` to a folder in your PATH
 - or run it directly from the download location
 
-3. run `forage` - it will create a config template at `~/.config/forage/config.yaml`
+3. run setup to create config template:
+```bash
+   forage --setup
+```
+4. edit the config file with your API credentials:
+```bash
+   open -e ~/.config/forage/config.yaml  # macos
+   nano ~/.config/forage/config.yaml     # linux
+   notepad %USERPROFILE%\.config\forage\config.yaml  # windows
+```
+   - get spotify credentials: https://developer.spotify.com/dashboard
+   - get lastfm key: https://www.last.fm/api/account/create
+   
 4. edit the config file with your API credentials:
    - get spotify credentials: https://developer.spotify.com/dashboard
    - get lastfm key: https://www.last.fm/api/account/create
