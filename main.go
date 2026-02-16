@@ -153,17 +153,22 @@ func main() {
 
 	// Summary
 	logAlways("\n--- Download Summary ---\n")
-	logAlways("✓ Downloaded: %d tracks\n", successCount)
-	if skippedCount > 0 {
-		logAlways("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
-	}
-
+	
 	if len(failures) > 0 {
+		logAlways("✓ Downloaded: %d tracks to %s\n", successCount, *outputFlag)
+		if skippedCount > 0 {
+			logAlways("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
+		}
 		logAlways("\n✗ Failed downloads:\n")
 		for _, track := range failures {
 			logAlways("  - %s\n", track)
 		}
-	} else if successCount > 0 {
-		logAlways("\n✓ All downloads completed successfully!\n")
+	} else {
+		if skippedCount > 0 {
+			logAlways("✓ Downloaded: %d tracks to %s\n", successCount, *outputFlag)
+			logAlways("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
+		} else {
+			logAlways("✓ Downloaded %d tracks to %s\n", successCount, *outputFlag)
+		}
 	}
 }
