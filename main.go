@@ -24,7 +24,7 @@ func main() {
 	quietFlag := flag.Bool("quiet", false, "Quiet mode - minimal output")
 	onlyFlag := flag.Bool("only", false, "Only download the provided track")
 	includeSourceFlag := flag.Bool("include-source", false, "Include the provided track in the download")
-	textInputFlag := flag.String("text", "", "Search for a track by 'Artist - Song Title'")
+	textInputFlag := flag.String("text", "", "Search for a track by 'Artist - Track'")
 	flag.Parse()
 	
 	if *textInputFlag != "" && strings.HasPrefix(*textInputFlag, "-") {
@@ -73,7 +73,7 @@ func main() {
 
 	args := flag.Args()
 	if len(args) < 1 && *textInputFlag == "" {
-		logAlways("Usage:\n  forage <spotify-url>\n  forage --text 'Artist - Song'\n  forage config\n")
+		logAlways("Usage:\n  forage <spotify-url>\n  forage --text 'Artist - Track'\n  forage config\n")
 		os.Exit(1)
 	}
 
