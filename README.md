@@ -77,13 +77,8 @@ basic:
 forage "https://open.spotify.com/track/2Ud3deeqLAG988pfW0Kwcl?si=e1f747637ed241b6"
 ```
 
-options:
-```bash
-forage --count 5 --output ~/Music "spotify-url"
-forage --quiet "spotify-url"
-```
-
 flags:
+- `--setup` - create config file template
 - `--count N` - number of similar tracks (max: 50, default: 10)
 - `--output DIR` - where to save files (default: ./downloads)
 - `--quiet` - minimal output
