@@ -8,7 +8,7 @@ paste a spotify track url, forage finds similar songs on last.fm and downloads t
 
 ## why
 
-i wanted a way to discover and own music without relying on streaming services. this tool lets you build a local library based on what you already like
+i wanted a way to discover and download music without relying on streaming services. forage lets you build a local library based on what you already like
 
 ## install
 
