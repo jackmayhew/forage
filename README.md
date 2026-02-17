@@ -111,7 +111,7 @@ LASTFM_API_KEY=your_key
 
 1. gets track info from spotify
 2. finds similar tracks on last.fm
-3. downloads from youtube as mp3
+3. downloads from youtube as mp3 (concurrent downloads via a worker pool)
 4. adds metadata and album art from spotify
 
 files are named `Artist - Track.mp3` and automatically skips download if already downloaded
@@ -131,10 +131,11 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 - exclude artist flag
 
 **technical:**
-- concurrent downloads with worker pool
 - retry logic for failed downloads
 - custom metadata template options
 - improved audio source matching (spotdl integration)
+- debug flag for detailed error 
+- configurable worker count
 
 ## disclaimer
 
