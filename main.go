@@ -118,9 +118,13 @@ func main() {
 	}
 
 	if !*onlyFlag && len(similarTracks) > 0 {
-		logAlways("\nFound %d similar tracks:\n\n", len(similarTracks))
-		for i, t := range similarTracks {
-			logAlways("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
+		if *quietFlag {
+			logAlways("Found %d similar tracks.\n", len(similarTracks))
+		} else {
+			logAlways("\nFound %d similar tracks:\n\n", len(similarTracks))
+			for i, t := range similarTracks {
+				logAlways("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
+			}
 		}
 	}
 
@@ -177,14 +181,14 @@ func main() {
 		if res.Err != nil {
 			if errors.Is(res.Err, ErrSkipped) {
 				skippedCount++
-				logAlways("[-] Skipped: %s - %s\n", res.Job.Artist, res.Job.Title)
+				logInfo("[-] Skipped: %s - %s\n", res.Job.Artist, res.Job.Title)
 			} else {
 				failures = append(failures, fmt.Sprintf("%s - %s", res.Job.Artist, res.Job.Title))
-				logAlways("[X] Failed:  %s - %s\n", res.Job.Artist, res.Job.Title)
+				logInfo("[X] Failed:  %s - %s\n", res.Job.Artist, res.Job.Title)
 			}
 		} else {
 			successCount++
-			logAlways("[+] Success: %s - %s\n", res.Job.Artist, res.Job.Title)
+			logInfo("[+] Success: %s - %s\n", res.Job.Artist, res.Job.Title)
 		}
 	}
 
@@ -197,10 +201,14 @@ func main() {
 		logAlways("No tracks processed.\n")
 	} else {
 		if successCount > 0 {
-			logAlways("✓ Downloaded: %d tracks to %s\n", successCount, *outputFlag)
+			trackWord := "tracks"
+			if successCount == 1 { trackWord = "track" }
+			logAlways("✓ Downloaded: %d %s to %s\n", successCount, trackWord, *outputFlag)
 		}
 		if skippedCount > 0 {
-			logAlways("⊘ Skipped: %d tracks (already exist)\n", skippedCount)
+			trackWord := "tracks"
+			if skippedCount == 1 { trackWord = "track" }
+			logAlways("⊘ Skipped: %d %s (already exist)\n", skippedCount, trackWord)
 		}
 		if len(failures) > 0 {
 			logAlways("\n✗ Failed downloads:\n")
