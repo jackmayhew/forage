@@ -20,21 +20,18 @@ func sanitizeFilename(name string) string {
 	return result
 }
 
-func downloadTrack(artist, track, outputDir, album, albumArtURL string, current, total int) error {
-	logInfo("Downloading: %s - %s (%d/%d)\n", artist, track, current, total)
-
+func downloadTrack(artist, track, outputDir, album, albumArtURL string) error {
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %v", err)
 	}
 
-	// Sanitize artist and track names for filename
+	// Sanitize for filename
 	safeArtist := sanitizeFilename(artist)
 	safeTrack := sanitizeFilename(track)
 	filename := fmt.Sprintf("%s - %s.mp3", safeArtist, safeTrack)
 	outputPath := filepath.Join(outputDir, filename)
 
 	if _, err := os.Stat(outputPath); err == nil {
-		logInfo("⊘ Already exists, skipping\n\n")
 		return ErrSkipped
 	}
 
@@ -54,9 +51,7 @@ func downloadTrack(artist, track, outputDir, album, albumArtURL string, current,
 
 	// Add metadata
 	if err := addMetadata(outputPath, artist, track, album, albumArtURL); err != nil {
-		logInfo("⚠ Downloaded but failed to add metadata\n\n")
-	} else {
-		logInfo("✓ Downloaded with metadata\n\n")
+		return nil 
 	}
 
 	return nil

@@ -151,23 +151,40 @@ func main() {
 		jobs = append(jobs, job)
 	}
 
-	// Download queue
+	// Download
 	totalToDownload := len(jobs)
 	logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
 
+	jobsChan := make(chan DownloadJob, totalToDownload)
+	resultsChan := make(chan Result, totalToDownload)
+
+	for w := 1; w <= 3; w++ {
+		go worker(jobsChan, resultsChan, *outputFlag)
+	}
+
+	// Send to workers
+	for _, job := range jobs {
+		jobsChan <- job
+	}
+	close(jobsChan)
+
+	// Collect results
 	var failures []string
 	successCount, skippedCount := 0, 0
 
-	for i, job := range jobs {
-		err := downloadTrack(job.Artist, job.Title, *outputFlag, job.Album, job.ArtURL, i+1, totalToDownload)
-		if err != nil {
-			if errors.Is(err, ErrSkipped) {
+	for i := 0; i < totalToDownload; i++ {
+		res := <-resultsChan
+		if res.Err != nil {
+			if errors.Is(res.Err, ErrSkipped) {
 				skippedCount++
+				logAlways("[-] Skipped: %s - %s\n", res.Job.Artist, res.Job.Title)
 			} else {
-				failures = append(failures, fmt.Sprintf("%s - %s", job.Artist, job.Title))
+				failures = append(failures, fmt.Sprintf("%s - %s", res.Job.Artist, res.Job.Title))
+				logAlways("[X] Failed:  %s - %s\n", res.Job.Artist, res.Job.Title)
 			}
 		} else {
 			successCount++
+			logAlways("[+] Success: %s - %s\n", res.Job.Artist, res.Job.Title)
 		}
 	}
 
@@ -193,5 +210,17 @@ func main() {
 		} else if successCount > 0 {
 			logAlways("\n✓ All downloads completed successfully!\n")
 		}
+	}
+}
+
+type Result struct {
+	Job DownloadJob
+	Err error
+}
+
+func worker(jobs <-chan DownloadJob, results chan<- Result, outputDir string) {
+	for job := range jobs {
+		err := downloadTrack(job.Artist, job.Title, outputDir, job.Album, job.ArtURL)
+		results <- Result{Job: job, Err: err}
 	}
 }
