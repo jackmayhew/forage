@@ -143,4 +143,4 @@ this tool is for educational purposes only. please support artists by purchasing
 
 ## license
 
-mit license - see [LICENSE](license) file for details
+mit license - see [license](LICENSE) file for details
