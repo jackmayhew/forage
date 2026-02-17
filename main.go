@@ -157,7 +157,12 @@ func main() {
 
 	// Download
 	totalToDownload := len(jobs)
-	logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
+	sourceSuffix := ""
+	if (*includeSourceFlag || config.IncludeSource) && !*onlyFlag {
+		sourceSuffix = " - including source track"
+	}
+	
+	logAlways("\n--- Starting downloads (%d total%s) ---\n\n", totalToDownload, sourceSuffix)
 
 	jobsChan := make(chan DownloadJob, totalToDownload)
 	resultsChan := make(chan Result, totalToDownload)
@@ -188,7 +193,7 @@ func main() {
 			}
 		} else {
 			successCount++
-			logInfo("[+] Success: %s - %s\n", res.Job.Artist, res.Job.Title)
+			logInfo("[+] %s - %s\n", res.Job.Artist, res.Job.Title)
 		}
 	}
 
