@@ -10,6 +10,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type DownloadJob struct {
+    Artist, Title, Album, ArtURL string
+}
+
 func main() {
 	godotenv.Load()
 
@@ -77,71 +81,35 @@ func main() {
 		os.Exit(1)
 	}
 
-	var trackID string
-	// --text flag always takes priority
+	// Resolve source track (Spotify)
+	var track *SpotifyTrack
+	input := ""
 	if *textInputFlag != "" {
-		// check if user provided url by accident
-		if strings.Contains(*textInputFlag, "open.spotify.com") {
-			logInfo("URL detected in --text flag, extracting ID...\n")
-			trackID = extractTrackID(*textInputFlag)
-		} else {
-			foundTrack, err := searchTrackGeneral(token, *textInputFlag)
-			if err != nil {
-				logError("Error searching for track '%s': %v\n", *textInputFlag, err)
-				os.Exit(1)
-			}
-			trackID = foundTrack.ID
-		}
+		input = *textInputFlag
+	} else if len(args) > 0 {
+		input = args[0]
+	}
+
+	if strings.Contains(input, "open.spotify.com") {
+		trackID := extractTrackID(input)
+		track, err = getTrackInfo(token, trackID)
 	} else {
-		input := args[0]
-		// check if it's a url or if we should treat it as text
-		if strings.Contains(input, "open.spotify.com") {
-			trackID = extractTrackID(input)
-		} else if config.UseText {
-			logInfo("Treating input as search query (use_text: true)...\n")
-			foundTrack, err := searchTrackGeneral(token, input)
-			if err != nil {
-				logError("Error searching for track '%s': %v\n", input, err)
-				os.Exit(1)
-			}
-			trackID = foundTrack.ID
-		} else {
-			logAlways("Invalid Spotify URL. Use --text for search or enable 'use_text' in config.\n")
-			os.Exit(1)
-		}
+		track, err = searchTrackGeneral(token, input)
 	}
 
-	if trackID == "" {
-		logAlways("Invalid Spotify URL")
-		os.Exit(1)
-	}
-
-	logInfo("Track ID: %s\n", trackID)
-
-	// Track info from Spotify
-	track, err := getTrackInfo(token, trackID)
-	if err != nil {
-		logError("Error getting track info: %v\n", err)
-		os.Exit(1)
-	}
-
-	if len(track.Artists) == 0 {
-		logAlways("Track not found or has no artist information")
+	if err != nil || track == nil {
+		logAlways("Error: Could not find track on Spotify.\n")
 		os.Exit(1)
 	}
 
 	artistName := track.Artists[0].Name
 	trackName := track.Name
-
 	logInfo("\nFound: %s - %s\n\n", artistName, trackName)
+
+	// Find similar tracks (Last.fm)
+	var similarTracks []LastFmTrack
 	if !*onlyFlag {
 		logInfo("Finding %d similar tracks on Last.fm...\n", *countFlag)
-	}
-	// Similar tracks from Last.fm
-	var similarTracks []LastFmTrack
-	
-	if !*onlyFlag {
-		var err error
 		similarTracks, err = getSimilarTracks(lastfmAPIKey, artistName, trackName, *countFlag)
 		if err != nil {
 			logError("Error getting similar tracks: %v\n", err)
@@ -149,70 +117,57 @@ func main() {
 		}
 	}
 
-	totalToDownload := len(similarTracks)
-	if *onlyFlag || *includeSourceFlag {
-		totalToDownload++
-	}
-
 	if !*onlyFlag && len(similarTracks) > 0 {
 		logAlways("\nFound %d similar tracks:\n\n", len(similarTracks))
 		for i, t := range similarTracks {
-			logInfo("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
+			logAlways("%d. %s - %s\n", i+1, t.Artist.Name, t.Name)
 		}
 	}
 
-	if len(similarTracks) > 0 {
-		logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
-	} else {
-		logAlways("\nNo similar tracks found. Skipping downloads.\n")
+	// Build download queue (metadata lookup)
+	var jobs []DownloadJob
+
+	// Source track first
+	if *onlyFlag || *includeSourceFlag {
+		jobs = append(jobs, DownloadJob{
+			Artist: artistName,
+			Title:  trackName,
+			Album:  track.Album.Name,
+			ArtURL: track.Album.Images[0].URL,
+		})
 	}
 
-	var failures []string
-	successCount := 0
-	skippedCount := 0
-	currentIdx := 1
-
-	if *onlyFlag || *includeSourceFlag {
-		artURL := ""
-		if len(track.Album.Images) > 0 { artURL = track.Album.Images[0].URL }
+	// Add similar tracks (Fetch Spotify metadata for each)
+	for _, t := range similarTracks {
+		meta, err := searchTrackMetadata(token, t.Artist.Name, t.Name)
+		job := DownloadJob{Artist: t.Artist.Name, Title: t.Name}
 		
-		err := downloadTrack(artistName, trackName, *outputFlag, track.Album.Name, artURL, currentIdx, totalToDownload)
+		if err == nil && meta != nil {
+			job.Album = meta.Album.Name
+			if len(meta.Album.Images) > 0 {
+				job.ArtURL = meta.Album.Images[0].URL
+			}
+		}
+		jobs = append(jobs, job)
+	}
+
+	// Download queue
+	totalToDownload := len(jobs)
+	logAlways("\n--- Starting downloads (%d total) ---\n\n", totalToDownload)
+
+	var failures []string
+	successCount, skippedCount := 0, 0
+
+	for i, job := range jobs {
+		err := downloadTrack(job.Artist, job.Title, *outputFlag, job.Album, job.ArtURL, i+1, totalToDownload)
 		if err != nil {
 			if errors.Is(err, ErrSkipped) {
 				skippedCount++
 			} else {
-				failures = append(failures, fmt.Sprintf("%s - %s", artistName, trackName))
+				failures = append(failures, fmt.Sprintf("%s - %s", job.Artist, job.Title))
 			}
 		} else {
 			successCount++
-		}
-		currentIdx++
-	}
-
-
-	if !*onlyFlag {
-		for _, t := range similarTracks {
-			similarTrackInfo, err := searchTrackMetadata(token, t.Artist.Name, t.Name)
-
-			var album, albumArtURL string
-			if err == nil && similarTrackInfo != nil {
-				album = similarTrackInfo.Album.Name
-				if len(similarTrackInfo.Album.Images) > 0 {
-					albumArtURL = similarTrackInfo.Album.Images[0].URL
-				}
-			}
-
-			err = downloadTrack(t.Artist.Name, t.Name, *outputFlag, album, albumArtURL, currentIdx, totalToDownload)
-			if err != nil {
-				if errors.Is(err, ErrSkipped) {
-					skippedCount++
-				} else {
-					failures = append(failures, fmt.Sprintf("%s - %s", t.Artist.Name, t.Name))
-				}
-			} else {
-				successCount++
-			}
-			currentIdx++
 		}
 	}
 

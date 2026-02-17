@@ -128,7 +128,6 @@ files are named `Artist - Track.mp3` and automatically skips download if already
 - similar artist search
 - spotify playlist support
 - interactive track selection
-- genre filtering
 - exclude artist flag
 
 **technical:**
