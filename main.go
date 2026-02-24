@@ -128,7 +128,7 @@ func main() {
 		}
 	}
 
-	// Build download queue (metadata lookup)
+	// Download queue (metadata lookup)
 	var jobs []DownloadJob
 
 	// Source track first
