@@ -42,10 +42,13 @@ winget install ffmpeg
 ```bash
 # navigate to your downloads folder
 cd ~/Downloads
+
 # make the binary executable
 chmod +x forage-darwin-arm64  # or forage-linux-amd64
+
 # move to system path
 sudo mv forage-darwin-arm64 /usr/local/bin/forage
+
 # macos only: remove quarantine flag
 sudo xattr -d com.apple.quarantine /usr/local/bin/forage
 ```
@@ -78,10 +81,13 @@ with flags:
 ```bash
 # get 5 similar tracks
 forage --count 5 "https://open.spotify.com/track/..."
+
 # download only the provided track (no similar songs)
 forage --only "https://open.spotify.com/track/..."
+
 # download the provided track plus similar tracks
 forage --include-source "https://open.spotify.com/track/..."
+
 # search for a track with plain text
 forage --text "Artist - Track"
 ```
