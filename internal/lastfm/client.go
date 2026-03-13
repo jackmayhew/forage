@@ -1,4 +1,4 @@
-package main
+package lastfm
 
 import (
 	"encoding/json"
@@ -8,20 +8,20 @@ import (
 	"net/url"
 )
 
-type LastFmSimilarResponse struct {
+type SimilarResponse struct {
 	SimilarTracks struct {
-		Track []LastFmTrack `json:"track"`
+		Track []Track `json:"track"`
 	} `json:"similartracks"`
 }
 
-type LastFmTrack struct {
+type Track struct {
 	Name   string `json:"name"`
 	Artist struct {
 		Name string `json:"name"`
 	} `json:"artist"`
 }
 
-func getSimilarTracks(apiKey, artist, track string, limit int) ([]LastFmTrack, error) {
+func GetSimilarTracks(apiKey, artist, track string, limit int) ([]Track, error) {
 	baseURL := "http://ws.audioscrobbler.com/2.0/"
 	params := url.Values{}
 	params.Set("method", "track.getsimilar")
@@ -44,7 +44,7 @@ func getSimilarTracks(apiKey, artist, track string, limit int) ([]LastFmTrack, e
 		return nil, err
 	}
 
-	var result LastFmSimilarResponse
+	var result SimilarResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err

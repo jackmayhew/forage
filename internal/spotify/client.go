@@ -1,4 +1,4 @@
-package main
+package spotify
 
 import (
 	"encoding/json"
@@ -6,16 +6,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
-type SpotifyAuthResponse struct {
-	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
-	ExpiresIn   int    `json:"expires_in"`
-}
-
-type SpotifyTrack struct {
+type Track struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
 	Artists []struct {
@@ -29,7 +24,8 @@ type SpotifyTrack struct {
 	} `json:"album"`
 }
 
-func getSpotifyToken(clientID, clientSecret string) (string, error) {
+// requests a client credentials token from Spotify
+func GetToken(clientID, clientSecret string) (string, error) {
 	authURL := "https://accounts.spotify.com/api/token"
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
@@ -49,7 +45,13 @@ func getSpotifyToken(clientID, clientSecret string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var authResp SpotifyAuthResponse
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("spotify auth failed: %d", resp.StatusCode)
+	}
+
+	var authResp struct {
+		AccessToken string `json:"access_token"`
+	}
 	if err := json.NewDecoder(resp.Body).Decode(&authResp); err != nil {
 		return "", err
 	}
@@ -57,7 +59,8 @@ func getSpotifyToken(clientID, clientSecret string) (string, error) {
 	return authResp.AccessToken, nil
 }
 
-func getTrackInfo(token, trackID string) (*SpotifyTrack, error) {
+// fetches metadata for a specific Spotify Track ID
+func GetTrackInfo(token, trackID string) (*Track, error) {
 	trackURL := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", trackID)
 
 	req, err := http.NewRequest("GET", trackURL, nil)
@@ -73,7 +76,7 @@ func getTrackInfo(token, trackID string) (*SpotifyTrack, error) {
 	}
 	defer resp.Body.Close()
 
-	var track SpotifyTrack
+	var track Track
 	if err := json.NewDecoder(resp.Body).Decode(&track); err != nil {
 		return nil, err
 	}
@@ -81,7 +84,8 @@ func getTrackInfo(token, trackID string) (*SpotifyTrack, error) {
 	return &track, nil
 }
 
-func spotifySearch(token, query string) (*SpotifyTrack, error) {
+// general track search or specific metadata search
+func Search(token, query string) (*Track, error) {
 	searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(query))
 
 	req, err := http.NewRequest("GET", searchURL, nil)
@@ -104,7 +108,7 @@ func spotifySearch(token, query string) (*SpotifyTrack, error) {
 
 	var result struct {
 		Tracks struct {
-			Items []SpotifyTrack `json:"items"`
+			Items []Track `json:"items"`
 		} `json:"tracks"`
 	}
 
@@ -113,17 +117,25 @@ func spotifySearch(token, query string) (*SpotifyTrack, error) {
 	}
 
 	if len(result.Tracks.Items) == 0 {
-		return nil, fmt.Errorf("no track found")
+		return nil, fmt.Errorf("no track found for query: %s", query)
 	}
 
 	return &result.Tracks.Items[0], nil
 }
 
-func searchTrackMetadata(token, artist, track string) (*SpotifyTrack, error) {
+// helper for specific Artist - Track searches
+func SearchMetadata(token, artist, track string) (*Track, error) {
 	query := fmt.Sprintf("track:%s artist:%s", track, artist)
-	return spotifySearch(token, query)
+	return Search(token, query)
 }
 
-func searchTrackGeneral(token, query string) (*SpotifyTrack, error) {
-	return spotifySearch(token, query)
+// pulls the ID out of a spotify URL
+func ExtractTrackID(input string) string {
+	// matches IDs in URLs like .../track/4uLU6hMCjZq0Z3vt2m6zNc?si=...
+	re := regexp.MustCompile(`track/([a-zA-Z0-9]+)`)
+	matches := re.FindStringSubmatch(input)
+	if len(matches) > 1 {
+		return matches[1]
+	}
+	return input // return as is if it's already an ID
 }

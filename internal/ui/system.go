@@ -1,25 +1,12 @@
-package main
+package ui
 
 import (
 	"fmt"
 	"os/exec"
-	"regexp"
 	"runtime"
 )
 
-var trackIDRegex = regexp.MustCompile(`track/([a-zA-Z0-9]{22})`)
-
-func extractTrackID(url string) string {
-	matches := trackIDRegex.FindStringSubmatch(url)
-
-	if len(matches) > 1 {
-		return matches[1]
-	}
-
-	return ""
-}
-
-func openFile(path string) {
+func OpenFile(path string) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "darwin":
